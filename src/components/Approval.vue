@@ -8,8 +8,8 @@
 </template>
 
 <script>
-import { XHeader, XInput, XButton } from 'vux'
-import * as dd from 'dingtalk-jsapi'
+import { XHeader, XInput, XButton } from "vux";
+import * as dd from "dingtalk-jsapi";
 
 export default {
   components: {
@@ -20,31 +20,33 @@ export default {
   data() {
     return {
       // 钉钉企业id
-      corpId: 'ding22271df2cb9aab4135c2f4657eb6378f',
+      corpId: "ding22271df2cb9aab4135c2f4657eb6378f",
       // 企业自定义控件
-      spaceId: ''
-    }
+      spaceId: ""
+    };
   },
   created() {
-    this.init()
+    this.init();
   },
   methods: {
     async init() {
-      // 免登
-      dd.runtime.permission.requestAuthCode({
-        corpId: this.corpId,
-        onSuccess: function(result) {
-        /*{
+      dd.ready(function() {
+        // 免登
+        dd.runtime.permission.requestAuthCode({
+          corpId: this.corpId,
+          onSuccess: function(result) {
+            /*{
             code: 'hYLK98jkf0m' //string authCode
         }*/
-        },
-        onFail: function(err) {
-          console.log('err')
-        }
-      })
+          },
+          onFail: function(err) {
+            console.log("err");
+          }
+        });
+      });
     }
   }
-}
+};
 </script>
 
 <style scoped>
