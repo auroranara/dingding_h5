@@ -20,7 +20,7 @@ export default {
   data() {
     return {
       // 钉钉企业id
-      corpId: 'ding22271df2cb9aab4135c2f4657eb6378f',
+      corpId: 'dingb3df049b06530ece35c2f4657eb6378f',
       // 企业自定义控件
       spaceId: ''
     }
