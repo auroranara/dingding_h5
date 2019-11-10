@@ -21,3 +21,18 @@ export function saveFeedBack(data) {
     params: data
   })
 }
+export function fetchAccessToken(params) {
+  return fetch({
+    url: '/dd/getAccessToken',
+    method: 'get',
+    params,
+  })
+}
+
+// export function fetchJsapiTicket(params) {
+//   return fetch({
+//     url: '',
+//     method: 'get',
+//     params,
+//   })
+// }
