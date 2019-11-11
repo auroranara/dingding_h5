@@ -23,8 +23,8 @@ module.exports = {
         changeOrigin: true,
         pathRewrite: {
           '^/dd': '/dd'
-        },
-      },
+        }
+      }
     },
 
     // Various Dev Server settings

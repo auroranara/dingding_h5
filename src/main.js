@@ -5,10 +5,11 @@ import FastClick from 'fastclick'
 import VueRouter from 'vue-router'
 import router from './router'
 import App from './App'
-import { AjaxPlugin } from 'vux'
+import { AjaxPlugin, AlertPlugin } from 'vux'
 import store from './store/store'
 Vue.use(AjaxPlugin)
 Vue.use(VueRouter)
+Vue.use(AlertPlugin)
 FastClick.attach(document.body)
 
 Vue.config.productionTip = false
