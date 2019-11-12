@@ -10,14 +10,6 @@ module.exports = {
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
     proxyTable: {
-      '/yunwei': {
-        // target: 'http://192.168.10.2',
-        target: 'http://www.zkxr.com',
-        changeOrigin: true,
-        pathRewrite: {
-          '^/yunwei': '/yunwei'
-        }
-      },
       '/api': {
         target: 'http://114.55.242.193:8080',
         changeOrigin: true,

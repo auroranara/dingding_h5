@@ -44,7 +44,7 @@
 <script>
 import { XInput, XButton, Group, Datetime } from "vux";
 import * as dd from "dingtalk-jsapi";
-import { fetchAccessToken, fetchJsapiTicket } from "@/api.js";
+import { fetchAccessToken, fetchJsapiTicket, fetchSign } from "@/api.js";
 
 export default {
   components: {
@@ -71,7 +71,8 @@ export default {
       },
       // 免登返回的code
       code: "",
-      accessToken: ""
+      accessToken: "",
+      nonceStr: "123456"
     };
   },
   created() {
@@ -79,32 +80,78 @@ export default {
   },
   methods: {
     async init() {
-      const res = await fetchAccessToken();
-      console.log("accessToken", res.data);
-      this.$vux.alert.show({
-        title: "accessToken",
-        content: res.data
+      const resTicket = await fetchJsapiTicket();
+      const ticket = resTicket.data.ticket;
+      // 获取签名参数
+      const resSign = await fetchSign({
+        url: "http://114.55.242.193:18080/#/",
+        nonceStr: this.nonceStr,
+        ticket
       });
+      const { sign, timeStamp } = resSign.data;
+      console.log({
+        agentId: this.agentId, // 必填，微应用ID
+        corpId: this.corpId, //必填，企业ID
+        timeStamp, // 必填，生成签名的时间戳
+        nonceStr: this.nonceStr, // 必填，生成签名的随机串
+        signature: sign, // 必填，签名
+        type: 0,
+        jsApiList: [
+          "runtime.info",
+          "biz.contact.choose",
+          "device.notification.confirm",
+          "device.notification.alert",
+          "device.notification.prompt",
+          "biz.ding.post",
+          "biz.util.openLink",
+          "biz.util.uploadAttachment"
+        ]
+      });
+      dd.config({
+        agentId: this.agentId, // 必填，微应用ID
+        corpId: this.corpId, //必填，企业ID
+        timeStamp, // 必填，生成签名的时间戳
+        nonceStr: this.nonceStr, // 必填，生成签名的随机串
+        signature: sign, // 必填，签名
+        type: 0, //选填。0表示微应用的jsapi,1表示服务窗的jsapi；不填默认为0。该参数从dingtalk.js的0.8.3版本开始支持
+        jsApiList: [
+          "runtime.info",
+          "runtime.permission",
+          "biz.contact.choose",
+          "device.notification.confirm",
+          "device.notification.alert",
+          "device.notification.prompt",
+          "biz.ding.post",
+          "biz.util.openLink",
+          "biz.util.uploadAttachment"
+        ] // 必填，需要使用的jsapi列表，注意：不要带dd。
+      });
+      // const res = await fetchAccessToken();
+      // console.log("accessToken", res.data);
+      // this.$vux.alert.show({
+      //   title: "accessToken",
+      //   content: res.data
+      // });
       // 免登
       dd.ready(async () => {
-        // dd.config({
-        //   agentId: "dingb3df049b06530ece35c2f4657eb6378f", // 必填，微应用ID
-        //   corpId: this.corpId, //必填，企业ID
-        //   timeStamp: "1573389830703", // 必填，生成签名的时间戳
-        //   nonceStr: "123456", // 必填，生成签名的随机串
-        //   signature: "bbe3d329a523869341cc6916707dfc41aa5ff0e9", // 必填，签名
-        //   type: 0, //选填。0表示微应用的jsapi,1表示服务窗的jsapi；不填默认为0。该参数从dingtalk.js的0.8.3版本开始支持
-        //   jsApiList: [
-        //     "runtime.info",
-        //     "biz.contact.choose",
-        //     "device.notification.confirm",
-        //     "device.notification.alert",
-        //     "device.notification.prompt",
-        //     "biz.ding.post",
-        //     "biz.util.openLink",
-        //     "biz.util.uploadAttachment"
-        //   ] // 必填，需要使用的jsapi列表，注意：不要带dd。
-        // });
+        dd.runtime.info({
+          onSuccess: function(info) {
+            console.log("runtime info: " + JSON.stringify(info));
+          },
+          onFail: function(err) {
+            console.log("fail: " + JSON.stringify(err));
+          }
+        });
+
+        dd.runtime.permission.requestAuthCode({
+          corpId: this.corpId,
+          onSuccess: function(info) {
+            console.log("authcode: " + info.code);
+          },
+          onFail: function(err) {
+            console.log("fail: " + JSON.stringify(err));
+          }
+        });
       });
     },
     async handleUpload() {
