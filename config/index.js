@@ -18,11 +18,11 @@ module.exports = {
           '^/yunwei': '/yunwei'
         }
       },
-      '/dd': {
+      '/api': {
         target: 'http://114.55.242.193:8080',
         changeOrigin: true,
         pathRewrite: {
-          '^/dd': '/dd'
+          '^/api': '/api'
         }
       }
     },

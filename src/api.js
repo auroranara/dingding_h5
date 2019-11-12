@@ -23,9 +23,9 @@ export function saveFeedBack(data) {
 }
 export function fetchAccessToken(params) {
   return fetch({
-    url: '/dd/getAccessToken',
+    url: 'http://114.55.242.193:18080/api/dd/getAccessToken',
     method: 'get',
-    params,
+    params
   })
 }
 
