@@ -22,7 +22,7 @@ const HOST = 'http://114.55.242.193:18080'
 //     params: data
 //   })
 // }
-export function fetchAccessToken(params) {
+export function fetchAccessToken (params) {
   return fetch({
     url: `${HOST}/api/dd/getAccessToken`,
     method: 'get',
@@ -30,7 +30,8 @@ export function fetchAccessToken(params) {
   })
 }
 
-export function fetchJsapiTicket(params) {
+// 获取计算好的ticket
+export function fetchJsapiTicket (params) {
   return fetch({
     url: `${HOST}/api/dd/getJsApiTicket`,
     method: 'get',
@@ -39,10 +40,28 @@ export function fetchJsapiTicket(params) {
 }
 
 // 获取签名参数
-export function fetchSign(data) {
+export function fetchSign (data) {
   return fetch({
     url: `${HOST}/api/dd/getSign`,
     method: 'post',
     data
+  })
+}
+
+// 获取userId 参数authCode
+export function fetchUserId (params) {
+  return fetch({
+    url: `${HOST}/api/dd/getuserinfobyauthcode`,
+    method: 'get',
+    params,
+  })
+}
+
+// 上传附件 参数uploadFile authCOde userId
+export function uploadFile () {
+  return fetch({
+    url: `${HOST}/api/processinstance/upload`,
+    method: 'post',
+    data,
   })
 }
