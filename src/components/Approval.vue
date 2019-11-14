@@ -27,13 +27,13 @@
           placeholder-align="right"
         ></x-input>
         <datetime title="发布日期" v-model="form.date"></datetime>
-        <input type="file" accept="" @click="handleUploadChange" />
+        <input type="file" accept=".pdf" @change="handleUploadChange" />
       </group>
-      <group title="选择">
+      <!-- <group title="选择">
         <x-button style="margin-top:12px" @click.native="handleUpload()"
           >+</x-button
         >
-      </group>
+      </group> -->
     </div>
   </div>
 </template>
@@ -70,7 +70,7 @@ export default {
       code: "",
       accessToken: "",
       nonceStr: "123456",
-      userid: "",
+      userId: "",
       authCode: ""
     };
   },
@@ -108,9 +108,9 @@ export default {
             this.authCode = authCode;
             const res = await fetchUserId({ authCode });
             if (res && res.status === 200) {
-              const userid = res.data.data;
-              dd.userid = userid;
-              this.userid = userid;
+              const userId = res.data.data;
+              dd.userid = userId;
+              this.userId = userId;
             }
           },
           onFail: err => {
@@ -133,8 +133,19 @@ export default {
       // });
     },
     async handleUploadChange(e) {
-      const file = e.target.files[0];
-      console.log("file", file);
+      const files = e.target.files;
+      console.log(e);
+
+      if (files && files.length) {
+        console.log("files", files);
+        console.log("files[0]", files[0]);
+        const formData = new FormData();
+        formData.append("uploadFile", files[0]);
+        formData.append("authCode", this.authCode);
+        formData.append("userId", this.userId);
+        const res = await uploadFile(formData);
+        console.log("upload", res);
+      }
     }
   }
 };

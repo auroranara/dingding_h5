@@ -21,7 +21,7 @@ const service = axios.create({
   // ],
   headers: {
     // 'Content-Type': 'application/x-www-form-urlencoded'
-    'Content-Type': 'application/json '
+    'Content-Type': 'application/json'
   }
 })
 
