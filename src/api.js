@@ -57,7 +57,7 @@ export function fetchUserId (params) {
   })
 }
 
-// 上传附件 参数uploadFile authCode userId
+// 上传附件 参数fileauthCode userId
 export function uploadFile (data) {
   return fetch({
     url: `${HOST}/api/processinstance/upload`,
@@ -66,5 +66,6 @@ export function uploadFile (data) {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
+    timeout: 20000
   })
 }

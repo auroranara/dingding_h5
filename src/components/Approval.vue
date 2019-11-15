@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div style="padding:10% 0">
+    <div>
       <group>
         <x-input
           title="接收单位"
@@ -29,11 +29,6 @@
         <datetime title="发布日期" v-model="form.date"></datetime>
         <input type="file" accept=".pdf" @change="handleUploadChange" />
       </group>
-      <!-- <group title="选择">
-        <x-button style="margin-top:12px" @click.native="handleUpload()"
-          >+</x-button
-        >
-      </group> -->
     </div>
   </div>
 </template>
@@ -69,9 +64,11 @@ export default {
       // 免登返回的code
       code: "",
       accessToken: "",
+      // 用于加密的字符串
       nonceStr: "123456",
       userId: "",
-      authCode: ""
+      // 附件
+      fileList: []
     };
   },
   created() {
@@ -101,16 +98,17 @@ export default {
       dd.userid = 0;
       // 免登
       dd.ready(() => {
+        // 获取authCode 注意： authCode只能使用一次
         dd.runtime.permission.requestAuthCode({
           corpId: this.corpId,
           onSuccess: async info => {
             const authCode = info.code;
-            this.authCode = authCode;
             const res = await fetchUserId({ authCode });
             if (res && res.status === 200) {
               const userId = res.data.data;
               dd.userid = userId;
               this.userId = userId;
+              console.log("userId", userId);
             }
           },
           onFail: err => {
@@ -132,19 +130,44 @@ export default {
       //   }
       // });
     },
+    // 点击上传附件
     async handleUploadChange(e) {
       const files = e.target.files;
-      console.log(e);
 
       if (files && files.length) {
-        console.log("files", files);
-        console.log("files[0]", files[0]);
-        const formData = new FormData();
-        formData.append("uploadFile", files[0]);
-        formData.append("authCode", this.authCode);
-        formData.append("userId", this.userId);
-        const res = await uploadFile(formData);
-        console.log("upload", res);
+        dd.runtime.permission.requestAuthCode({
+          corpId: this.corpId,
+          onSuccess: async info => {
+            const authCode = info.code;
+            console.log("authCode", authCode);
+            const formData = new FormData();
+            formData.append("file", files[0]);
+            formData.append("authCode", authCode);
+            formData.append("userId", this.userId);
+            const res = await uploadFile(formData);
+            if (res && res.status === 200) {
+              const {
+                spaceId,
+                fileId,
+                fileName,
+                fileSize,
+                fileType
+              } = JSON.parse(res.data.dentry);
+              const newItem = {
+                spaceId,
+                fileId,
+                fileName,
+                fileSize,
+                fileType
+              };
+              console.log("newItem", newItem);
+              this.fileList = [...this.fileList, newItem];
+            }
+          },
+          onFail: err => {
+            console.log("fail: " + JSON.stringify(err));
+          }
+        });
       }
     }
   }
