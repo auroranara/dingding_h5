@@ -1,6 +1,7 @@
 <template>
   <div>
-    <div>
+    <!-- 表单内容 -->
+    <div class="content">
       <group>
         <x-input
           title="接收单位"
@@ -26,15 +27,56 @@
           placeholder="请输入"
           placeholder-align="right"
         ></x-input>
-        <datetime title="发布日期" v-model="form.date"></datetime>
-        <input type="file" accept=".pdf" @change="handleUploadChange" />
+        <popup-radio
+          title="是否需要反馈"
+          :options="options1"
+          v-model="form.needFeedback"
+        ></popup-radio>
+        <datetime
+          title="发布日期"
+          v-model="form.date"
+        ></datetime>
+        <input
+          ref="upload"
+          type="file"
+          accept=".pdf"
+          @change="handleUploadChange"
+        />
       </group>
+      <div class="file">
+        附件
+        <div
+          class="file-upload"
+          @click="handleClickUpload"
+        >
+          <div>+</div>
+        </div>
+        <div v-for="item in fileList">
+          <div class="file-item">{{item.fileName}}</div>
+        </div>
+      </div>
+    </div>
+    <!-- 底部提交 -->
+    <div class="bottom">
+      <x-button
+        @click.native="handleSubmit"
+        class="btn"
+        type="primary"
+      >提交</x-button>
     </div>
   </div>
 </template>
 
 <script>
-import { XInput, XButton, Group, Datetime } from "vux";
+import {
+  XInput,
+  XButton,
+  Group,
+  Datetime,
+  PopupRadio,
+  Flexbox,
+  FlexboxItem
+} from "vux";
 import * as dd from "dingtalk-jsapi";
 import { uploadFile, fetchUserId, fetchJsapiTicket, fetchSign } from "@/api.js";
 
@@ -43,7 +85,10 @@ export default {
     XInput,
     XButton,
     Group,
-    Datetime
+    Datetime,
+    PopupRadio,
+    Flexbox,
+    FlexboxItem
   },
   data() {
     return {
@@ -59,6 +104,7 @@ export default {
         sendUnit: "",
         title: "",
         num: "",
+        needFeedback: "",
         date: ""
       },
       // 免登返回的code
@@ -68,7 +114,8 @@ export default {
       nonceStr: "123456",
       userId: "",
       // 附件
-      fileList: []
+      fileList: [],
+      options1: ["需要", "不需要"]
     };
   },
   created() {
@@ -118,18 +165,18 @@ export default {
       });
     },
     // 点击上传文件
-    async handleUpload() {
-      // dd.biz.util.uploadAttachment({
-      //   file: { spaceId: "702472833", max: 1 },
-      //   types: ["file"], //PC端支持["photo","file","space"]
-      //   onSuccess: result => {
-      //     console.log("upload", result);
-      //   },
-      //   onFail: err => {
-      //     console.log("upload fail: " + JSON.stringify(err));
-      //   }
-      // });
-    },
+    // async handleUpload() {
+    //   dd.biz.util.uploadAttachment({
+    //     file: { spaceId: "702472833", max: 1 },
+    //     types: ["file"], //PC端支持["photo","file","space"]
+    //     onSuccess: result => {
+    //       console.log("upload", result);
+    //     },
+    //     onFail: err => {
+    //       console.log("upload fail: " + JSON.stringify(err));
+    //     }
+    //   });
+    // },
     // 点击上传附件
     async handleUploadChange(e) {
       const files = e.target.files;
@@ -169,10 +216,64 @@ export default {
           }
         });
       }
-    }
+    },
+    handleClickUpload() {
+      this.$refs.upload.click();
+    },
+    handleSubmit() {}
   }
 };
 </script>
 
 <style scoped>
+.content {
+  padding-bottom: 92px;
+  box-sizing: border-box;
+}
+.bottom {
+  position: fixed;
+  bottom: 0;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px 10px 20px 10px;
+  background: #fff;
+}
+.btn {
+  background: #0569e1;
+  border-radius: 10px;
+}
+input[type="file"] {
+  display: none;
+}
+.file {
+  background: #fff;
+  padding: 10px 15px;
+  margin-top: 1.17em;
+  font-size: 17px;
+  overflow: hidden;
+}
+.file-upload {
+  width: 45px;
+  height: 45px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #ededed;
+  margin-top: 10px;
+  color: #a09e9e;
+  font-size: 30px;
+  font-weight: 300;
+  cursor: pointer;
+}
+.file-upload > div {
+  transform: scale(1.3);
+}
+.file-item {
+  color: #0569e1;
+  margin-top: 8px;
+  padding-right: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  text-overflow: ellipsis;
+}
 </style>
