@@ -48,20 +48,22 @@
           @click="handleClickUpload"
           type="primary"
         >上传<i class="el-icon-upload el-icon--right"></i></el-button>
+        <div v-for="item in fileList">
+          <div class="file-item">{{item.fileName}}</div>
+        </div>
       </el-form-item>
       <input
-        ref="upload"
+        ref="uploadInput"
         type="file"
         accept=".pdf"
         @change="handleUploadChange"
       />
-      <div v-for="item in fileList">
-        <div class="file-item">{{item.fileName}}</div>
-      </div>
     </el-form>
   </div>
 </template>
 <script>
+import * as dd from "dingtalk-jsapi";
+import { uploadFile, fetchUserId, fetchJsapiTicket, fetchSign } from "@/api.js";
 export default {
   data() {
     return {
@@ -158,14 +160,18 @@ export default {
                 fileId,
                 fileName,
                 fileSize,
-                fileType
+                fileType,
+                id,
+                size,
+                name,
+                type
               } = JSON.parse(res.data.dentry);
               const newItem = {
                 spaceId,
-                fileId,
-                fileName,
-                fileSize,
-                fileType
+                fileId: fileId || id,
+                fileName: fileName || name,
+                fileSize: fileSize || size,
+                fileType: fileType || type
               };
               console.log("newItem", newItem);
               this.fileList = [...this.fileList, newItem];
@@ -178,7 +184,11 @@ export default {
       }
     },
     handleClickUpload() {
-      this.$refs.upload.click();
+      if (this.$refs.uploadInput) {
+        this.$refs.uploadInput.click();
+      } else {
+        console.log("不存在的dom节点");
+      }
     }
   }
 };

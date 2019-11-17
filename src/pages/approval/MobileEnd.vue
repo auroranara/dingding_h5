@@ -37,7 +37,8 @@
           v-model="form.date"
         ></datetime>
         <input
-          ref="upload"
+          class="upload"
+          ref="uploadInput"
           type="file"
           accept=".pdf"
           @change="handleUploadChange"
@@ -47,7 +48,7 @@
         附件
         <div
           class="file-upload"
-          @click="handleClickUpload"
+          @click="handleClickUpload()"
         >
           <div>+</div>
         </div>
@@ -185,14 +186,18 @@ export default {
                 fileId,
                 fileName,
                 fileSize,
-                fileType
+                fileType,
+                id,
+                size,
+                name,
+                type
               } = JSON.parse(res.data.dentry);
               const newItem = {
                 spaceId,
-                fileId,
-                fileName,
-                fileSize,
-                fileType
+                fileId: fileId || id,
+                fileName: fileName || name,
+                fileSize: fileSize || size,
+                fileType: fileType || type
               };
               console.log("newItem", newItem);
               this.fileList = [...this.fileList, newItem];
@@ -205,7 +210,21 @@ export default {
       }
     },
     handleClickUpload() {
-      this.$refs.upload.click();
+      if (this.$refs.uploadInput) {
+        // alert(JSON.stringify(this.$refs.uploadInput));
+        setTimeout(() => {
+          this.$refs.uploadInput.click();
+        }, 0);
+      } else alert("不存在uploadInput");
+
+      // let file = document.createElement("input");
+      // file.setAttribute("type", "file");
+      // file.setAttribute("capture", "camera");
+      // file.setAttribute("accept", "image/*");
+      // file.style.display = "none";
+      // document.body.appendChild(file);
+      // file.addEventListener("change", this.handleUploadChange);
+      // file.click();
     },
     handleSubmit() {}
   }
@@ -229,7 +248,7 @@ export default {
   background: #0569e1;
   border-radius: 10px;
 }
-input[type="file"] {
+.upload {
   display: none;
 }
 .file {
