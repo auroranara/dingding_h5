@@ -7,9 +7,14 @@ import router from './router'
 import App from './App'
 import { AjaxPlugin, AlertPlugin } from 'vux'
 import store from './store/store'
+import ElementUI from 'element-ui';
+import 'element-ui/lib/theme-chalk/index.css';
+
 Vue.use(AjaxPlugin)
 Vue.use(VueRouter)
 Vue.use(AlertPlugin)
+Vue.use(ElementUI)
+
 FastClick.attach(document.body)
 
 Vue.config.productionTip = false

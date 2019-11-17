@@ -164,19 +164,6 @@ export default {
         });
       });
     },
-    // 点击上传文件
-    // async handleUpload() {
-    //   dd.biz.util.uploadAttachment({
-    //     file: { spaceId: "702472833", max: 1 },
-    //     types: ["file"], //PC端支持["photo","file","space"]
-    //     onSuccess: result => {
-    //       console.log("upload", result);
-    //     },
-    //     onFail: err => {
-    //       console.log("upload fail: " + JSON.stringify(err));
-    //     }
-    //   });
-    // },
     // 点击上传附件
     async handleUploadChange(e) {
       const files = e.target.files;
