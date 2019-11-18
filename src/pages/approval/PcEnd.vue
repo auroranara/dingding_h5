@@ -1,36 +1,31 @@
 <template>
   <div class="content">
-    <el-form :model="form" label-width="150px" size="small">
-      <el-form-item label="接收单位">
-        <el-input class="wp70" v-model="form.receiveUnit"></el-input>
-      </el-form-item>
+    <el-form
+      :model="form"
+      label-width="150px"
+      size="small"
+    >
       <el-form-item label="文件标题">
-        <el-input class="wp70" v-model="form.title"></el-input>
+        <el-input
+          class="wp70"
+          v-model="form.title"
+        ></el-input>
       </el-form-item>
-      <el-form-item label="文号">
-        <el-input class="wp70" v-model="form.num"></el-input>
-      </el-form-item>
-      <el-form-item label="发文单位">
-        <el-input class="wp70" v-model="form.sendUnit"></el-input>
-      </el-form-item>
-      <el-form-item label="是否需要反馈">
-        <el-radio-group v-model="form.needFeedback">
-          <el-radio label="需要"></el-radio>
-          <el-radio label="不需要"></el-radio>
-        </el-radio-group>
-      </el-form-item>
-      <el-form-item label="发布日期">
-        <el-date-picker v-model="form.date" type="date" placeholder="选择日期">
-        </el-date-picker>
+      <el-form-item label="描述">
+        <el-input
+          class="wp70"
+          type="textarea"
+          :rows="2"
+          v-model="form.desc"
+        ></el-input>
       </el-form-item>
       <el-form-item label="附件（PDF）">
         <el-button
           @click="handleClickUpload"
           type="primary"
           :loading="uploading"
-          >上传<i class="el-icon-upload el-icon--right"></i
-        ></el-button>
-        <div v-for="item in fileList">
+        >上传<i class="el-icon-upload el-icon--right"></i></el-button>
+        <div v-for="item in form.fileList">
           <div class="file-item">{{ item.fileName }}</div>
         </div>
       </el-form-item>
@@ -42,9 +37,34 @@
         @change="handleUploadChange"
       />
       <el-form-item label="审批人">
-        <div class="select-circle" @click="handleSelectApproval">
-          <div>+</div>
+        <div style="display:flex">
+          <div
+            class="approval-item-container"
+            v-for="(item,index) in form.users"
+          >
+            <div class="approval-item">
+              <div
+                @click="removeApproval(index)"
+                class="approval-close"
+              >+</div>
+              <div> {{item.name[0]}}</div>
+            </div>
+            <div class="approval-name">{{item.name}}</div>
+          </div>
+          <!-- 选择审批人按钮 -->
+          <div
+            class="select-circle"
+            @click="handleSelectApproval"
+          >
+            <div>+</div>
+          </div>
         </div>
+      </el-form-item>
+      <el-form-item>
+        <el-button
+          @click="handleSubmit"
+          type="primary"
+        >提交</el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -63,12 +83,12 @@ export default {
       spaceId: "",
       // 表单数据
       form: {
-        receiveUnit: "",
-        sendUnit: "",
         title: "",
-        num: "",
-        needFeedback: "",
-        date: ""
+        desc: "",
+        // 附件
+        fileList: [],
+        // 审批人
+        users: []
       },
       // 免登返回的code
       code: "",
@@ -76,8 +96,6 @@ export default {
       // 用于加密的字符串
       nonceStr: "123456",
       userId: "",
-      // 附件
-      fileList: [],
       options1: ["需要", "不需要"],
       uploading: false
     };
@@ -104,7 +122,11 @@ export default {
         nonceStr: this.nonceStr, // 必填，生成签名的随机串
         signature: sign, // 必填，签名
         type: 0, //选填。0表示微应用的jsapi,1表示服务窗的jsapi；不填默认为0。该参数从dingtalk.js的0.8.3版本开始支持
-        jsApiList: ["runtime.info", "biz.util.uploadAttachment"] // 必填，需要使用的jsapi列表，注意：不要带dd。
+        jsApiList: [
+          "runtime.info",
+          "biz.util.uploadAttachment",
+          "biz.contact.complexPicker"
+        ] // 必填，需要使用的jsapi列表，注意：不要带dd。
       });
       dd.userid = 0;
       // 免登
@@ -166,7 +188,7 @@ export default {
                 fileType: fileType || type
               };
               console.log("newItem", newItem);
-              this.fileList = [...this.fileList, newItem];
+              this.form.fileList = [...this.form.fileList, newItem];
             }
           },
           onFail: err => {
@@ -183,7 +205,37 @@ export default {
       }
     },
     // 点击选择审批人
-    handleSelectApproval() {}
+    handleSelectApproval() {
+      dd.biz.contact.complexPicker({
+        title: "审批人", // 标题
+        corpId: this.corpId, // 企业id
+        multiple: false, // 是否多选
+        limitTips: "超出了", //超过限定人数返回提示
+        maxUsers: 1000, //最大可选人数
+        pickedUsers: this.form.users, // 已选用户
+        appId: this.agentId, // 微应用的Id
+        responseUserOnly: false, // true返回人员信息 false 返回人员和部门信息
+        startWithDepartmentId: 0, // 0 表示从企业最上层开始 -1 表示从自己所在部门开始
+        onSuccess: info => {
+          // info { departments[],selectedCount{Number},users[{ avatar,emplId,name }] }
+          const { departments, selectedCount, users } = info;
+          if (+selectedCount > 0) {
+            this.form.users = users;
+          }
+        },
+        onFail: err => {
+          console.log("select user fail: " + JSON.stringify(err));
+        }
+      });
+    },
+    handleSubmit() {
+      console.log("submit", this.form);
+    },
+    removeApproval(index) {
+      const list = [...this.form.users];
+      list.splice(index, 1);
+      this.form.users = list;
+    }
   }
 };
 </script>
@@ -217,11 +269,9 @@ input[type="file"] {
   font-size: 13px;
 }
 .select-circle {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 35px;
-  height: 35px;
+  box-sizing: content-box;
+  width: 31px;
+  height: 31px;
   border: 1px dashed #409eff;
   border-radius: 100%;
   overflow: hidden;
@@ -229,5 +279,53 @@ input[type="file"] {
   font-size: 29px;
   font-weight: 300;
   cursor: pointer;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.approval-item-container {
+  padding: 0 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.approval-item-container .approval-item {
+  width: 33px;
+  height: 33px;
+  background: #409eff;
+  border-radius: 100%;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+}
+.approval-item-container .approval-item .approval-close {
+  position: absolute;
+  right: 0;
+  top: 0;
+  color: white;
+  cursor: pointer;
+  border-radius: 100%;
+  width: 15px;
+  height: 15px;
+  text-align: center;
+  line-height: 15px;
+  transform: rotate(-135deg) translate(-2px, 7px);
+  background: #000000d4;
+  z-index: 99;
+}
+.approval-item-container .approval-item div {
+  position: absolute;
+  color: white;
+  font-size: 13px;
+  transform: translate(-50%, -50%);
+  top: 50%;
+  left: 50%;
+}
+.approval-item-container .approval-name {
+  font-size: 12px;
+  margin-top: 5px;
+  line-height: 11px;
+  color: gray;
 }
 </style>

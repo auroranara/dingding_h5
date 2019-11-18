@@ -4,35 +4,17 @@
     <div class="content">
       <group>
         <x-input
-          title="接收单位"
-          v-model="form.receiveUnit"
-          placeholder="请输入"
-          placeholder-align="right"
-        ></x-input>
-        <x-input
           title="文件标题"
           v-model="form.title"
           placeholder="请输入"
           placeholder-align="right"
         ></x-input>
         <x-input
-          title="文号"
-          v-model="form.num"
+          title="描述"
+          v-model="form.desc"
           placeholder="请输入"
           placeholder-align="right"
         ></x-input>
-        <x-input
-          title="发文单位"
-          v-model="form.sendUnit"
-          placeholder="请输入"
-          placeholder-align="right"
-        ></x-input>
-        <popup-radio
-          title="是否需要反馈"
-          :options="options1"
-          v-model="form.needFeedback"
-        ></popup-radio>
-        <datetime title="发布日期" v-model="form.date"></datetime>
         <input
           class="upload"
           ref="uploadInput"
@@ -42,21 +24,53 @@
           @change="handleUploadChange"
         />
       </group>
+      <!-- 附件 -->
       <div class="file">
         附件
-        <label class="file-upload" for="uploadInput">
+        <label
+          class="file-upload"
+          for="uploadInput"
+        >
           +
         </label>
-        <div v-for="item in fileList">
+        <div v-for="item in form.fileList">
           <div class="file-item">{{ item.fileName }}</div>
+        </div>
+      </div>
+      <!-- 审批人 -->
+      <div class="approval">
+        审批人
+        <div style="display:flex;margin-top:10px">
+          <div
+            class="approval-item-container"
+            v-for="(item,index) in form.users"
+          >
+            <div class="approval-item">
+              <div
+                @click="removeApproval(index)"
+                class="approval-close"
+              >+</div>
+              <div> {{item.name[0]}}</div>
+            </div>
+            <div class="approval-name">{{item.name}}</div>
+          </div>
+          <!-- 选择审批人按钮 -->
+          <div
+            class="select-circle"
+            @click="handleSelectApproval"
+          >
+            <div>+</div>
+          </div>
         </div>
       </div>
     </div>
     <!-- 底部提交 -->
     <div class="bottom">
-      <x-button @click.native="handleSubmit" class="btn" type="primary"
-        >提交</x-button
-      >
+      <x-button
+        @click.native="handleSubmit"
+        class="btn"
+        type="primary"
+      >提交</x-button>
     </div>
   </div>
 </template>
@@ -94,12 +108,12 @@ export default {
       spaceId: "",
       // 表单数据
       form: {
-        receiveUnit: "",
-        sendUnit: "",
         title: "",
-        num: "",
-        needFeedback: "",
-        date: ""
+        desc: "",
+        // 附件
+        fileList: [],
+        // 审批人
+        users: []
       },
       // 免登返回的code
       code: "",
@@ -107,8 +121,6 @@ export default {
       // 用于加密的字符串
       nonceStr: "123456",
       userId: "",
-      // 附件
-      fileList: [],
       options1: ["需要", "不需要"]
     };
   },
@@ -134,7 +146,11 @@ export default {
         nonceStr: this.nonceStr, // 必填，生成签名的随机串
         signature: sign, // 必填，签名
         type: 0, //选填。0表示微应用的jsapi,1表示服务窗的jsapi；不填默认为0。该参数从dingtalk.js的0.8.3版本开始支持
-        jsApiList: ["runtime.info", "biz.util.uploadAttachment"] // 必填，需要使用的jsapi列表，注意：不要带dd。
+        jsApiList: [
+          "runtime.info",
+          "biz.util.uploadAttachment",
+          "biz.contact.complexPicker"
+        ] // 必填，需要使用的jsapi列表，注意：不要带dd。
       });
       dd.userid = 0;
       // 免登
@@ -193,7 +209,7 @@ export default {
                 fileType: fileType || type
               };
               console.log("newItem", newItem);
-              this.fileList = [...this.fileList, newItem];
+              this.form.fileList = [...this.form.fileList, newItem];
             }
           },
           onFail: err => {
@@ -202,7 +218,38 @@ export default {
         });
       }
     },
-    handleSubmit() {}
+    // 点击选择审批人
+    handleSelectApproval() {
+      dd.biz.contact.complexPicker({
+        title: "审批人", // 标题
+        corpId: this.corpId, // 企业id
+        multiple: false, // 是否多选
+        limitTips: "超出了", //超过限定人数返回提示
+        maxUsers: 1000, //最大可选人数
+        pickedUsers: this.form.users, // 已选用户
+        appId: this.agentId, // 微应用的Id
+        responseUserOnly: false, // true返回人员信息 false 返回人员和部门信息
+        startWithDepartmentId: 0, // 0 表示从企业最上层开始 -1 表示从自己所在部门开始
+        onSuccess: info => {
+          // info { departments[],selectedCount{Number},users[{ avatar,emplId,name }] }
+          const { departments, selectedCount, users } = info;
+          if (+selectedCount > 0) {
+            this.form.users = users;
+          }
+        },
+        onFail: err => {
+          console.log("select user fail: " + JSON.stringify(err));
+        }
+      });
+    },
+    handleSubmit() {
+      console.log("submit", this.form);
+    },
+    removeApproval(index) {
+      const list = [...this.form.users];
+      list.splice(index, 1);
+      this.form.users = list;
+    }
   }
 };
 </script>
@@ -257,5 +304,72 @@ export default {
   font-size: 14px;
   cursor: pointer;
   text-overflow: ellipsis;
+}
+.select-circle {
+  box-sizing: content-box;
+  width: 31px;
+  height: 31px;
+  border: 1px dashed #409eff;
+  border-radius: 100%;
+  overflow: hidden;
+  color: #409eff;
+  font-size: 29px;
+  font-weight: 300;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.approval {
+  background: #fff;
+  padding: 10px 15px;
+  margin-top: 1.17em;
+  font-size: 17px;
+  overflow: hidden;
+}
+.approval-item-container {
+  padding: 0 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.approval-item-container .approval-item {
+  width: 33px;
+  height: 33px;
+  background: #409eff;
+  border-radius: 100%;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+}
+.approval-item-container .approval-item .approval-close {
+  position: absolute;
+  right: 0;
+  top: 0;
+  color: white;
+  cursor: pointer;
+  border-radius: 100%;
+  width: 15px;
+  height: 15px;
+  text-align: center;
+  line-height: 15px;
+  transform: rotate(-135deg) translate(-2px, 7px);
+  background: #000000d4;
+  z-index: 99;
+}
+.approval-item-container .approval-item div {
+  position: absolute;
+  color: white;
+  font-size: 13px;
+  transform: translate(-50%, -50%);
+  top: 50%;
+  left: 50%;
+}
+.approval-item-container .approval-name {
+  font-size: 12px;
+  margin-top: 5px;
+  line-height: 11px;
+  color: gray;
 }
 </style>
