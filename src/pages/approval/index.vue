@@ -23,19 +23,21 @@ export default {
     this.judgeDevice();
   },
   methods: {
-    // 判断设备，如果是成功，就是手机端
     judgeDevice() {
-      dd.ready(() => {
-        dd.device.base.getPhoneInfo({
-          onSuccess: data => {
-            this.isPcEnd = false;
-            console.log("data", data);
-          },
-          onFail: err => {
-            console.log("data fail: " + JSON.stringify(err));
-          }
-        });
-      });
+      if (/(iPhone|iPad|iPod|iOS|Android)/i.test(navigator.userAgent)) {
+        this.isPcEnd = false;
+      }
+      // dd.ready(() => {
+      //   dd.device.base.getPhoneInfo({
+      //     onSuccess: data => {
+      //       this.isPcEnd = false;
+      //       console.log("data", data);
+      //     },
+      //     onFail: err => {
+      //       console.log("data fail: " + JSON.stringify(err));
+      //     }
+      //   });
+      // });
     }
   }
 };

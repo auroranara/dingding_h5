@@ -32,13 +32,11 @@
           :options="options1"
           v-model="form.needFeedback"
         ></popup-radio>
-        <datetime
-          title="发布日期"
-          v-model="form.date"
-        ></datetime>
+        <datetime title="发布日期" v-model="form.date"></datetime>
         <input
           class="upload"
           ref="uploadInput"
+          id="uploadInput"
           type="file"
           accept=".pdf"
           @change="handleUploadChange"
@@ -46,24 +44,19 @@
       </group>
       <div class="file">
         附件
-        <div
-          class="file-upload"
-          @click="handleClickUpload()"
-        >
-          <div>+</div>
-        </div>
+        <label class="file-upload" for="uploadInput">
+          +
+        </label>
         <div v-for="item in fileList">
-          <div class="file-item">{{item.fileName}}</div>
+          <div class="file-item">{{ item.fileName }}</div>
         </div>
       </div>
     </div>
     <!-- 底部提交 -->
     <div class="bottom">
-      <x-button
-        @click.native="handleSubmit"
-        class="btn"
-        type="primary"
-      >提交</x-button>
+      <x-button @click.native="handleSubmit" class="btn" type="primary"
+        >提交</x-button
+      >
     </div>
   </div>
 </template>
@@ -208,23 +201,6 @@ export default {
           }
         });
       }
-    },
-    handleClickUpload() {
-      if (this.$refs.uploadInput) {
-        // alert(JSON.stringify(this.$refs.uploadInput));
-        setTimeout(() => {
-          this.$refs.uploadInput.click();
-        }, 0);
-      } else alert("不存在uploadInput");
-
-      // let file = document.createElement("input");
-      // file.setAttribute("type", "file");
-      // file.setAttribute("capture", "camera");
-      // file.setAttribute("accept", "image/*");
-      // file.style.display = "none";
-      // document.body.appendChild(file);
-      // file.addEventListener("change", this.handleUploadChange);
-      // file.click();
     },
     handleSubmit() {}
   }

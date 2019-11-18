@@ -1,33 +1,17 @@
 <template>
   <div class="content">
-    <el-form
-      :model="form"
-      label-width="150px"
-      size="small"
-    >
+    <el-form :model="form" label-width="150px" size="small">
       <el-form-item label="接收单位">
-        <el-input
-          class="wp70"
-          v-model="form.receiveUnit"
-        ></el-input>
+        <el-input class="wp70" v-model="form.receiveUnit"></el-input>
       </el-form-item>
       <el-form-item label="文件标题">
-        <el-input
-          class="wp70"
-          v-model="form.title"
-        ></el-input>
+        <el-input class="wp70" v-model="form.title"></el-input>
       </el-form-item>
       <el-form-item label="文号">
-        <el-input
-          class="wp70"
-          v-model="form.num"
-        ></el-input>
+        <el-input class="wp70" v-model="form.num"></el-input>
       </el-form-item>
       <el-form-item label="发文单位">
-        <el-input
-          class="wp70"
-          v-model="form.sendUnit"
-        ></el-input>
+        <el-input class="wp70" v-model="form.sendUnit"></el-input>
       </el-form-item>
       <el-form-item label="是否需要反馈">
         <el-radio-group v-model="form.needFeedback">
@@ -36,28 +20,32 @@
         </el-radio-group>
       </el-form-item>
       <el-form-item label="发布日期">
-        <el-date-picker
-          v-model="form.date"
-          type="date"
-          placeholder="选择日期"
-        >
+        <el-date-picker v-model="form.date" type="date" placeholder="选择日期">
         </el-date-picker>
       </el-form-item>
       <el-form-item label="附件（PDF）">
         <el-button
           @click="handleClickUpload"
           type="primary"
-        >上传<i class="el-icon-upload el-icon--right"></i></el-button>
+          :loading="uploading"
+          >上传<i class="el-icon-upload el-icon--right"></i
+        ></el-button>
         <div v-for="item in fileList">
-          <div class="file-item">{{item.fileName}}</div>
+          <div class="file-item">{{ item.fileName }}</div>
         </div>
       </el-form-item>
       <input
         ref="uploadInput"
+        id="uploadInput"
         type="file"
         accept=".pdf"
         @change="handleUploadChange"
       />
+      <el-form-item label="审批人">
+        <div class="select-circle" @click="handleSelectApproval">
+          <div>+</div>
+        </div>
+      </el-form-item>
     </el-form>
   </div>
 </template>
@@ -90,7 +78,8 @@ export default {
       userId: "",
       // 附件
       fileList: [],
-      options1: ["需要", "不需要"]
+      options1: ["需要", "不需要"],
+      uploading: false
     };
   },
   created() {
@@ -144,9 +133,11 @@ export default {
       const files = e.target.files;
 
       if (files && files.length) {
+        // TODO：判断文件类型是否是pdf
         dd.runtime.permission.requestAuthCode({
           corpId: this.corpId,
           onSuccess: async info => {
+            this.uploading = true;
             const authCode = info.code;
             console.log("authCode", authCode);
             const formData = new FormData();
@@ -155,6 +146,7 @@ export default {
             formData.append("userId", this.userId);
             const res = await uploadFile(formData);
             if (res && res.status === 200) {
+              this.uploading = false;
               const {
                 spaceId,
                 fileId,
@@ -189,7 +181,9 @@ export default {
       } else {
         console.log("不存在的dom节点");
       }
-    }
+    },
+    // 点击选择审批人
+    handleSelectApproval() {}
   }
 };
 </script>
@@ -221,5 +215,19 @@ input[type="file"] {
 }
 .el-form-item__label {
   font-size: 13px;
+}
+.select-circle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 35px;
+  height: 35px;
+  border: 1px dashed #409eff;
+  border-radius: 100%;
+  overflow: hidden;
+  color: #409eff;
+  font-size: 29px;
+  font-weight: 300;
+  cursor: pointer;
 }
 </style>
