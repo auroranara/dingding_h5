@@ -66,7 +66,7 @@ export function uploadFile(data) {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
-    timeout: 300000
+    timeout: 500000
   })
 }
 

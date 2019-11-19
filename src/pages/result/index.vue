@@ -2,7 +2,6 @@
   <div class="content">
     <msg
       title="操作成功"
-      description="描述"
       :buttons="buttons"
       :icon="icon"
     ></msg>
