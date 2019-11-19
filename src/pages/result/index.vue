@@ -6,9 +6,11 @@
       :buttons="buttons"
       :icon="icon"
     ></msg>
-    <el-button @click="handleGoBack" style="width:220px" v-if="isPcEnd"
-      >返回</el-button
-    >
+    <el-button
+      @click="handleGoBack"
+      style="width:220px"
+      v-if="isPcEnd"
+    >返回</el-button>
   </div>
 </template>
 <script>
@@ -55,5 +57,6 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
+  box-sizing: border-box;
 }
 </style>

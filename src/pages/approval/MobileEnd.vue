@@ -30,25 +30,38 @@
       <div class="block">
         <span class="block-title">附件</span>
         <div style="padding-left:8px">
-          <label class="file-upload" for="uploadInput">
+          <label
+            class="file-upload"
+            for="uploadInput"
+          >
             +
           </label>
           <!-- 附件列表 -->
           <swipeout style="margin-top:10px">
-            <div v-for="(item, index) in form.fileList" :key="index">
+            <div
+              v-for="(item, index) in form.fileList"
+              :key="index"
+            >
               <swipeout-item transition-mode="reveal">
                 <div slot="right-menu">
-                  <swipeout-button @click.native="removeFile(index)" type="warn"
-                    >删除</swipeout-button
-                  >
+                  <swipeout-button
+                    @click.native="removeFile(index)"
+                    type="warn"
+                  >删除</swipeout-button>
                 </div>
-                <div slot="content" class="demo-content vux-1px-t">
+                <div
+                  slot="content"
+                  class="demo-content vux-1px-t"
+                >
                   <span class="file-item">{{ item.fileName }}</span>
                 </div>
               </swipeout-item>
             </div>
           </swipeout>
-          <div class="tips" v-if="showTips">附件左滑删除</div>
+          <div
+            class="tips"
+            v-if="showTips"
+          >附件左滑删除</div>
         </div>
         <!-- <div v-for="item in form.fileList">
           <div class="file-item">{{ item.fileName }}</div>
@@ -64,13 +77,19 @@
             :key="index"
           >
             <div class="approval-item">
-              <div @click="removeApproval(index)" class="approval-close">+</div>
+              <div
+                @click="removeApproval(index)"
+                class="approval-close"
+              >+</div>
               <div>{{ item.name[0] }}</div>
             </div>
             <div class="approval-name">{{ item.name }}</div>
           </div>
           <!-- 选择审批人按钮 -->
-          <div class="select-circle" @click="handleSelectApproval">
+          <div
+            class="select-circle"
+            @click="handleSelectApproval"
+          >
             <div>+</div>
           </div>
         </div>
@@ -78,9 +97,11 @@
     </div>
     <!-- 底部提交 -->
     <div class="bottom">
-      <x-button @click.native="handleSubmit" class="btn" type="primary"
-        >提交</x-button
-      >
+      <x-button
+        @click.native="handleSubmit"
+        class="btn"
+        type="primary"
+      >提交</x-button>
     </div>
   </div>
 </template>
@@ -229,9 +250,12 @@ export default {
             formData.append("authCode", authCode);
             formData.append("userId", this.userId);
             const res = await uploadFile(formData);
+
             if (res && res.status === 200) {
               // 隐藏加载中组件
               this.$vux.loading.hide();
+              const { dentry, qrCodeId } = res.data;
+              this.dentry = dentry;
               const {
                 spaceId,
                 fileId,
@@ -242,7 +266,7 @@ export default {
                 size,
                 name,
                 type
-              } = JSON.parse(res.data.dentry);
+              } = JSON.parse(dentry);
               const newItem = {
                 spaceId,
                 fileId: fileId || id,
@@ -310,15 +334,17 @@ export default {
         approvers: users[0].emplId,
         originatorUserId: this.userId,
         title,
-        desc
+        desc,
+        qrCodeId: this.qrCodeId
       };
       const res = await createApproval(payload);
       console.log("submit", payload);
       if (res && res.status === 200) {
-        this.$vux.toast.show({
-          text: "提交成功",
-          type: "success"
-        });
+        this.$router.push("/result");
+        // this.$vux.toast.show({
+        //   text: "提交成功",
+        //   type: "success"
+        // });
       } else {
         this.$vux.toast.show({
           text: "提交失败",

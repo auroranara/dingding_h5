@@ -22,7 +22,7 @@ const HOST = 'http://114.55.242.193:18080'
 //     params: data
 //   })
 // }
-export function fetchAccessToken (params) {
+export function fetchAccessToken(params) {
   return fetch({
     url: `${HOST}/api/dd/getAccessToken`,
     method: 'get',
@@ -31,7 +31,7 @@ export function fetchAccessToken (params) {
 }
 
 // 获取计算好的ticket
-export function fetchJsapiTicket (params) {
+export function fetchJsapiTicket(params) {
   return fetch({
     url: `${HOST}/api/dd/getJsApiTicket`,
     method: 'get',
@@ -40,7 +40,7 @@ export function fetchJsapiTicket (params) {
 }
 
 // 获取签名参数
-export function fetchSign (data) {
+export function fetchSign(data) {
   return fetch({
     url: `${HOST}/api/dd/getSign`,
     method: 'post',
@@ -49,7 +49,7 @@ export function fetchSign (data) {
 }
 
 // 获取userId 参数authCode
-export function fetchUserId (params) {
+export function fetchUserId(params) {
   return fetch({
     url: `${HOST}/api/dd/getuserinfobyauthcode`,
     method: 'get',
@@ -58,7 +58,7 @@ export function fetchUserId (params) {
 }
 
 // 上传附件 参数fileauthCode userId
-export function uploadFile (data) {
+export function uploadFile(data) {
   return fetch({
     url: `${HOST}/api/processinstance/upload`,
     method: 'post',
@@ -71,10 +71,19 @@ export function uploadFile (data) {
 }
 
 // 发起审批
-export function createApproval (data) {
+export function createApproval(data) {
   return fetch({
     url: `${HOST}/api/dd/create_approval`,
     method: 'post',
     data,
+  })
+}
+
+// 获取审批详情 参数id
+export function fetchApprovalDetail(params) {
+  return fetch({
+    url: `${HOST}/api/processinstance/getQrCodeDspInfo`,
+    method: 'get',
+    params,
   })
 }

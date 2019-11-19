@@ -1,10 +1,23 @@
 <template>
   <div class="content">
-    <el-form :model="form" label-width="150px" size="small">
-      <el-form-item label="标题" required>
-        <el-input class="wp70" v-model="form.title"></el-input>
+    <el-form
+      :model="form"
+      label-width="150px"
+      size="small"
+    >
+      <el-form-item
+        label="标题"
+        required
+      >
+        <el-input
+          class="wp70"
+          v-model="form.title"
+        ></el-input>
       </el-form-item>
-      <el-form-item label="描述" required>
+      <el-form-item
+        label="描述"
+        required
+      >
         <el-input
           class="wp70"
           type="textarea"
@@ -12,17 +25,25 @@
           v-model="form.desc"
         ></el-input>
       </el-form-item>
-      <el-form-item label="附件（PDF）" required>
+      <el-form-item
+        label="附件（PDF）"
+        required
+      >
         <el-button
           @click="handleClickUpload"
           type="primary"
           :loading="uploading"
-          >上传<i class="el-icon-upload el-icon--right"></i
-        ></el-button>
+        >上传<i class="el-icon-upload el-icon--right"></i></el-button>
         <div v-for="(item, index) in form.fileList">
-          <div class="file-item" :key="index">
+          <div
+            class="file-item"
+            :key="index"
+          >
             <span>{{ item.fileName }}</span>
-            <div @click="removeFile(index)" class="del">
+            <div
+              @click="removeFile(index)"
+              class="del"
+            >
               <i class="el-icon-delete"></i>
             </div>
           </div>
@@ -35,7 +56,10 @@
         accept=".pdf"
         @change="handleUploadChange"
       />
-      <el-form-item label="审批人" required>
+      <el-form-item
+        label="审批人"
+        required
+      >
         <div style="display:flex">
           <div
             class="approval-item-container"
@@ -43,13 +67,19 @@
             :key="index"
           >
             <div class="approval-item">
-              <div @click="removeApproval(index)" class="approval-close">+</div>
+              <div
+                @click="removeApproval(index)"
+                class="approval-close"
+              >+</div>
               <div>{{ item.name[0] }}</div>
             </div>
             <div class="approval-name">{{ item.name }}</div>
           </div>
           <!-- 选择审批人按钮 -->
-          <div class="select-circle" @click="handleSelectApproval">
+          <div
+            class="select-circle"
+            @click="handleSelectApproval"
+          >
             <span>+</span>
           </div>
         </div>
@@ -61,8 +91,7 @@
           @click="handleSubmit"
           type="primary"
           :disabled="uploading"
-          >提交</el-button
-        >
+        >提交</el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -101,7 +130,9 @@ export default {
       nonceStr: "123456",
       userId: "",
       options1: ["需要", "不需要"],
-      uploading: false
+      uploading: false,
+      // 上传文件返回参数，提交时需要
+      qrCodeId: ""
     };
   },
   created() {
@@ -176,6 +207,8 @@ export default {
             formData.append("userId", this.userId);
             const res = await uploadFile(formData);
             if (res && res.status === 200) {
+              const { dentry, qrCodeId } = res.data;
+              this.qrCodeId = qrCodeId;
               const {
                 spaceId,
                 fileId,
@@ -186,7 +219,7 @@ export default {
                 size,
                 name,
                 type
-              } = JSON.parse(res.data.dentry);
+              } = JSON.parse(dentry);
               const newItem = {
                 spaceId,
                 fileId: fileId || id,
@@ -270,12 +303,14 @@ export default {
         approvers: users[0].emplId,
         originatorUserId: this.userId,
         title,
-        desc
+        desc,
+        qrCodeId: this.qrCodeId
       };
       const res = await createApproval(payload);
       console.log("submit", res);
       if (res && res.status === 200) {
-        this.$message("提交成功");
+        // this.$message("提交成功");
+        this.$router.push("/result");
       } else {
         this.$message.error("提交失败");
       }

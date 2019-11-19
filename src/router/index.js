@@ -3,6 +3,7 @@ import Router from 'vue-router';
 // import Approval from '@/components/Approval'
 import Approval from '@/pages/approval/index';
 import Result from '@/pages/result/index';
+import Show from '@/pages/show/index';
 Vue.use(Router)
 
 export default new Router({
@@ -16,6 +17,11 @@ export default new Router({
       path: '/result',
       name: '结果',
       component: Result
+    },
+    {
+      path: '/show',
+      name: '展示',
+      component: Show
     },
   ]
 })
