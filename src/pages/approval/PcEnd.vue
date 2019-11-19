@@ -60,6 +60,7 @@
           size="big"
           @click="handleSubmit"
           type="primary"
+          :disabled="uploading"
           >提交</el-button
         >
       </el-form-item>
@@ -194,7 +195,7 @@ export default {
                 fileType: fileType || type
               };
               console.log("newItem", newItem);
-              this.form.fileList = [...this.form.fileList, newItem];
+              this.form.fileList = [newItem];
             } else {
               this.$message.error("上传失败");
             }
@@ -272,7 +273,12 @@ export default {
         desc
       };
       const res = await createApproval(payload);
-      console.log("submit", payload);
+      console.log("submit", res);
+      if (res && res.status === 200) {
+        this.$message("提交成功");
+      } else {
+        this.$message.error("提交失败");
+      }
     },
     removeApproval(index) {
       const list = [...this.form.users];

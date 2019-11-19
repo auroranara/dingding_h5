@@ -251,16 +251,13 @@ export default {
                 fileType: fileType || type
               };
               console.log("newItem", newItem);
-              this.form.fileList = [...this.form.fileList, newItem];
+              this.form.fileList = [newItem];
             } else {
               this.$vux.loading.hide();
-              this.$vux.loading.show({
+              this.$vux.toast.show({
                 text: "上传失败",
                 type: "warn"
               });
-              setTimeout(() => {
-                this.$vux.loading.hide();
-              }, 2000);
             }
           },
           onFail: err => {
@@ -317,6 +314,17 @@ export default {
       };
       const res = await createApproval(payload);
       console.log("submit", payload);
+      if (res && res.status === 200) {
+        this.$vux.toast.show({
+          text: "提交成功",
+          type: "success"
+        });
+      } else {
+        this.$vux.toast.show({
+          text: "提交失败",
+          type: "warn"
+        });
+      }
     },
     removeApproval(index) {
       const list = [...this.form.users];
