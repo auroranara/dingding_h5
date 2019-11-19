@@ -4,7 +4,7 @@
     <div class="content">
       <group>
         <x-input
-          title="文件标题"
+          title="标题"
           v-model="form.title"
           placeholder="请输入"
           placeholder-align="right"
@@ -25,17 +25,34 @@
         />
       </group>
       <!-- 附件 -->
-      <div class="file">
+      <div class="block">
         附件
-        <label
-          class="file-upload"
-          for="uploadInput"
-        >
+        <label class="file-upload" for="uploadInput">
           +
         </label>
-        <div v-for="item in form.fileList">
+        <!-- 附件列表 -->
+        <swipeout style="margin-top:10px">
+          <div
+            class="item-cell"
+            v-for="(item, index) in form.fileList"
+            :key="index"
+          >
+            <swipeout-item transition-mode="reveal">
+              <div slot="right-menu">
+                <swipeout-button @click.native="removeFile(index)" type="warn"
+                  >删除</swipeout-button
+                >
+              </div>
+              <div slot="content" class="demo-content vux-1px-t">
+                <span class="file-item">{{ item.fileName }}</span>
+              </div>
+            </swipeout-item>
+          </div>
+        </swipeout>
+        <div class="tips">附件左滑删除</div>
+        <!-- <div v-for="item in form.fileList">
           <div class="file-item">{{ item.fileName }}</div>
-        </div>
+        </div> -->
       </div>
       <!-- 审批人 -->
       <div class="approval">
@@ -43,22 +60,17 @@
         <div style="display:flex;margin-top:10px">
           <div
             class="approval-item-container"
-            v-for="(item,index) in form.users"
+            v-for="(item, index) in form.users"
+            :key="index"
           >
             <div class="approval-item">
-              <div
-                @click="removeApproval(index)"
-                class="approval-close"
-              >+</div>
-              <div> {{item.name[0]}}</div>
+              <div @click="removeApproval(index)" class="approval-close">+</div>
+              <div>{{ item.name[0] }}</div>
             </div>
-            <div class="approval-name">{{item.name}}</div>
+            <div class="approval-name">{{ item.name }}</div>
           </div>
           <!-- 选择审批人按钮 -->
-          <div
-            class="select-circle"
-            @click="handleSelectApproval"
-          >
+          <div class="select-circle" @click="handleSelectApproval">
             <div>+</div>
           </div>
         </div>
@@ -66,11 +78,9 @@
     </div>
     <!-- 底部提交 -->
     <div class="bottom">
-      <x-button
-        @click.native="handleSubmit"
-        class="btn"
-        type="primary"
-      >提交</x-button>
+      <x-button @click.native="handleSubmit" class="btn" type="primary"
+        >提交</x-button
+      >
     </div>
   </div>
 </template>
@@ -83,7 +93,11 @@ import {
   Datetime,
   PopupRadio,
   Flexbox,
-  FlexboxItem
+  FlexboxItem,
+  Swipeout,
+  SwipeoutItem,
+  SwipeoutButton,
+  Divider
 } from "vux";
 import * as dd from "dingtalk-jsapi";
 import { uploadFile, fetchUserId, fetchJsapiTicket, fetchSign } from "@/api.js";
@@ -96,7 +110,11 @@ export default {
     Datetime,
     PopupRadio,
     Flexbox,
-    FlexboxItem
+    FlexboxItem,
+    Swipeout,
+    SwipeoutItem,
+    SwipeoutButton,
+    Divider
   },
   data() {
     return {
@@ -182,6 +200,10 @@ export default {
         dd.runtime.permission.requestAuthCode({
           corpId: this.corpId,
           onSuccess: async info => {
+            // 显示加载中组件
+            this.$vux.loading.show({
+              text: "上传中"
+            });
             const authCode = info.code;
             console.log("authCode", authCode);
             const formData = new FormData();
@@ -190,6 +212,8 @@ export default {
             formData.append("userId", this.userId);
             const res = await uploadFile(formData);
             if (res && res.status === 200) {
+              // 隐藏加载中组件
+              this.$vux.loading.hide();
               const {
                 spaceId,
                 fileId,
@@ -249,6 +273,11 @@ export default {
       const list = [...this.form.users];
       list.splice(index, 1);
       this.form.users = list;
+    },
+    removeFile(index) {
+      const list = [...this.form.fileList];
+      list.splice(index, 1);
+      this.form.fileList = list;
     }
   }
 };
@@ -271,15 +300,24 @@ export default {
   background: #0569e1;
   border-radius: 10px;
 }
+.weui-btn_primary:not(.weui-btn_disabled):active {
+  background-color: #0076d4;
+  color: rgba(255, 255, 255, 0.6);
+}
 .upload {
   display: none;
 }
-.file {
+.block {
   background: #fff;
   padding: 10px 15px;
   margin-top: 1.17em;
   font-size: 17px;
   overflow: hidden;
+}
+.item-cell {
+  padding: 0;
+  height: 40px;
+  line-height: 40px;
 }
 .file-upload {
   width: 45px;
@@ -299,8 +337,6 @@ export default {
 }
 .file-item {
   color: #0569e1;
-  margin-top: 8px;
-  padding-right: 20px;
   font-size: 14px;
   cursor: pointer;
   text-overflow: ellipsis;
@@ -317,9 +353,13 @@ export default {
   font-weight: 300;
   cursor: pointer;
   position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  margin-bottom: 16px;
+}
+.select-circle > div {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 .approval {
   background: #fff;
@@ -371,5 +411,12 @@ export default {
   margin-top: 5px;
   line-height: 11px;
   color: gray;
+}
+.tips {
+  font-size: 14px;
+  color: #9f9f9f;
+  border-top: 1px solid #e5e5e5;
+  padding-top: 4px;
+  margin-top: 4px;
 }
 </style>

@@ -1,15 +1,8 @@
 <template>
   <div class="content">
-    <el-form
-      :model="form"
-      label-width="150px"
-      size="small"
-    >
-      <el-form-item label="文件标题">
-        <el-input
-          class="wp70"
-          v-model="form.title"
-        ></el-input>
+    <el-form :model="form" label-width="150px" size="small">
+      <el-form-item label="标题">
+        <el-input class="wp70" v-model="form.title"></el-input>
       </el-form-item>
       <el-form-item label="描述">
         <el-input
@@ -24,9 +17,15 @@
           @click="handleClickUpload"
           type="primary"
           :loading="uploading"
-        >上传<i class="el-icon-upload el-icon--right"></i></el-button>
-        <div v-for="item in form.fileList">
-          <div class="file-item">{{ item.fileName }}</div>
+          >上传<i class="el-icon-upload el-icon--right"></i
+        ></el-button>
+        <div v-for="(item, index) in form.fileList">
+          <div class="file-item" :key="index">
+            <span>{{ item.fileName }}</span>
+            <div @click="removeFile(index)" class="del">
+              <i class="el-icon-delete"></i>
+            </div>
+          </div>
         </div>
       </el-form-item>
       <input
@@ -40,31 +39,29 @@
         <div style="display:flex">
           <div
             class="approval-item-container"
-            v-for="(item,index) in form.users"
+            v-for="(item, index) in form.users"
+            :key="index"
           >
             <div class="approval-item">
-              <div
-                @click="removeApproval(index)"
-                class="approval-close"
-              >+</div>
-              <div> {{item.name[0]}}</div>
+              <div @click="removeApproval(index)" class="approval-close">+</div>
+              <div>{{ item.name[0] }}</div>
             </div>
-            <div class="approval-name">{{item.name}}</div>
+            <div class="approval-name">{{ item.name }}</div>
           </div>
           <!-- 选择审批人按钮 -->
-          <div
-            class="select-circle"
-            @click="handleSelectApproval"
-          >
-            <div>+</div>
+          <div class="select-circle" @click="handleSelectApproval">
+            <span>+</span>
           </div>
         </div>
       </el-form-item>
       <el-form-item>
         <el-button
+          style="width:250px"
+          size="big"
           @click="handleSubmit"
           type="primary"
-        >提交</el-button>
+          >提交</el-button
+        >
       </el-form-item>
     </el-form>
   </div>
@@ -235,6 +232,11 @@ export default {
       const list = [...this.form.users];
       list.splice(index, 1);
       this.form.users = list;
+    },
+    removeFile(index) {
+      const list = [...this.form.fileList];
+      list.splice(index, 1);
+      this.form.fileList = list;
     }
   }
 };
@@ -246,6 +248,7 @@ export default {
 .content {
   height: 100vh;
   padding: 20px;
+  background: white;
 }
 .wp70 {
   width: 70%;
@@ -258,12 +261,31 @@ input[type="file"] {
   display: none;
 }
 .file-item {
-  color: #0569e1;
+  width: 70%;
+  color: #1186ff;
   margin-top: 8px;
-  padding-right: 20px;
+  padding: 0 30px 0 5px;
   font-size: 14px;
-  cursor: pointer;
   text-overflow: ellipsis;
+  position: relative;
+}
+.file-item:hover {
+  /* color: #609fe2; */
+  background-color: #e6f7ff;
+}
+.file-item > span {
+  cursor: pointer;
+}
+.file-item:hover .del {
+  visibility: visible;
+  cursor: pointer;
+}
+.file-item .del {
+  position: absolute;
+  top: 0;
+  right: 10px;
+  color: #7c7b7b;
+  visibility: hidden;
 }
 .el-form-item__label {
   font-size: 13px;
@@ -272,17 +294,17 @@ input[type="file"] {
   box-sizing: content-box;
   width: 31px;
   height: 31px;
+  line-height: 31px;
   border: 1px dashed #409eff;
   border-radius: 100%;
   overflow: hidden;
   color: #409eff;
   font-size: 29px;
   font-weight: 300;
+  text-align: center;
   cursor: pointer;
   position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  margin-bottom: 16px;
 }
 .approval-item-container {
   padding: 0 10px;

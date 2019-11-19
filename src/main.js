@@ -5,7 +5,7 @@ import FastClick from 'fastclick'
 import VueRouter from 'vue-router'
 import router from './router'
 import App from './App'
-import { AjaxPlugin, AlertPlugin } from 'vux'
+import { AjaxPlugin, AlertPlugin, LoadingPlugin } from 'vux'
 import store from './store/store'
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
@@ -13,6 +13,7 @@ import 'element-ui/lib/theme-chalk/index.css';
 Vue.use(AjaxPlugin)
 Vue.use(VueRouter)
 Vue.use(AlertPlugin)
+Vue.use(LoadingPlugin)
 Vue.use(ElementUI)
 
 FastClick.attach(document.body)
