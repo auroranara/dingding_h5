@@ -6,14 +6,19 @@
 
 <script>
 export default {
-  name: 'app'
-}
+  name: "app"
+};
 </script>
 
 <style lang="less">
-@import '~vux/src/styles/reset.less';
+@import "~vux/src/styles/reset.less";
 
 body {
   background-color: #fbf9fe;
+}
+.weui-label::before {
+  content: "*";
+  color: #f56c6c;
+  margin-right: 4px;
 }
 </style>

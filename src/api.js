@@ -66,6 +66,15 @@ export function uploadFile (data) {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
-    timeout: 20000
+    timeout: 300000
+  })
+}
+
+// 发起审批
+export function createApproval (data) {
+  return fetch({
+    url: `${HOST}/api/dd/create_approval`,
+    method: 'post',
+    data,
   })
 }

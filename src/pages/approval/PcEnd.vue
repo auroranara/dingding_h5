@@ -1,10 +1,10 @@
 <template>
   <div class="content">
     <el-form :model="form" label-width="150px" size="small">
-      <el-form-item label="标题">
+      <el-form-item label="标题" required>
         <el-input class="wp70" v-model="form.title"></el-input>
       </el-form-item>
-      <el-form-item label="描述">
+      <el-form-item label="描述" required>
         <el-input
           class="wp70"
           type="textarea"
@@ -12,7 +12,7 @@
           v-model="form.desc"
         ></el-input>
       </el-form-item>
-      <el-form-item label="附件（PDF）">
+      <el-form-item label="附件（PDF）" required>
         <el-button
           @click="handleClickUpload"
           type="primary"
@@ -35,7 +35,7 @@
         accept=".pdf"
         @change="handleUploadChange"
       />
-      <el-form-item label="审批人">
+      <el-form-item label="审批人" required>
         <div style="display:flex">
           <div
             class="approval-item-container"
@@ -68,7 +68,13 @@
 </template>
 <script>
 import * as dd from "dingtalk-jsapi";
-import { uploadFile, fetchUserId, fetchJsapiTicket, fetchSign } from "@/api.js";
+import {
+  uploadFile,
+  fetchUserId,
+  fetchJsapiTicket,
+  fetchSign,
+  createApproval
+} from "@/api.js";
 export default {
   data() {
     return {
@@ -152,6 +158,10 @@ export default {
       const files = e.target.files;
 
       if (files && files.length) {
+        if (files[0].type !== "application/pdf") {
+          this.$message.error("请上传PDF");
+          return;
+        }
         // TODO：判断文件类型是否是pdf
         dd.runtime.permission.requestAuthCode({
           corpId: this.corpId,
@@ -165,7 +175,6 @@ export default {
             formData.append("userId", this.userId);
             const res = await uploadFile(formData);
             if (res && res.status === 200) {
-              this.uploading = false;
               const {
                 spaceId,
                 fileId,
@@ -186,7 +195,10 @@ export default {
               };
               console.log("newItem", newItem);
               this.form.fileList = [...this.form.fileList, newItem];
+            } else {
+              this.$message.error("上传失败");
             }
+            this.uploading = false;
           },
           onFail: err => {
             console.log("fail: " + JSON.stringify(err));
@@ -225,8 +237,42 @@ export default {
         }
       });
     },
-    handleSubmit() {
-      console.log("submit", this.form);
+    async handleSubmit() {
+      const { fileList, users, title, desc } = this.form;
+      if (!title) {
+        this.$message({
+          message: "请输入标题",
+          type: "warning"
+        });
+        return;
+      } else if (!desc) {
+        this.$message({
+          message: "请输入描述",
+          type: "warning"
+        });
+        return;
+      } else if (!fileList.length > 0) {
+        this.$message({
+          message: "请上传附件",
+          type: "warning"
+        });
+        return;
+      } else if (!users.length > 0) {
+        this.$message({
+          message: "请选择审批人",
+          type: "warning"
+        });
+        return;
+      }
+      const payload = {
+        ...fileList[0],
+        approvers: users[0].emplId,
+        originatorUserId: this.userId,
+        title,
+        desc
+      };
+      const res = await createApproval(payload);
+      console.log("submit", payload);
     },
     removeApproval(index) {
       const list = [...this.form.users];

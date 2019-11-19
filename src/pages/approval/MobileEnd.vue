@@ -8,12 +8,14 @@
           v-model="form.title"
           placeholder="请输入"
           placeholder-align="right"
+          text-align="right"
         ></x-input>
         <x-input
           title="描述"
           v-model="form.desc"
           placeholder="请输入"
           placeholder-align="right"
+          text-align="right"
         ></x-input>
         <input
           class="upload"
@@ -26,38 +28,36 @@
       </group>
       <!-- 附件 -->
       <div class="block">
-        附件
-        <label class="file-upload" for="uploadInput">
-          +
-        </label>
-        <!-- 附件列表 -->
-        <swipeout style="margin-top:10px">
-          <div
-            class="item-cell"
-            v-for="(item, index) in form.fileList"
-            :key="index"
-          >
-            <swipeout-item transition-mode="reveal">
-              <div slot="right-menu">
-                <swipeout-button @click.native="removeFile(index)" type="warn"
-                  >删除</swipeout-button
-                >
-              </div>
-              <div slot="content" class="demo-content vux-1px-t">
-                <span class="file-item">{{ item.fileName }}</span>
-              </div>
-            </swipeout-item>
-          </div>
-        </swipeout>
-        <div class="tips">附件左滑删除</div>
+        <span class="block-title">附件</span>
+        <div style="padding-left:8px">
+          <label class="file-upload" for="uploadInput">
+            +
+          </label>
+          <!-- 附件列表 -->
+          <swipeout style="margin-top:10px">
+            <div v-for="(item, index) in form.fileList" :key="index">
+              <swipeout-item transition-mode="reveal">
+                <div slot="right-menu">
+                  <swipeout-button @click.native="removeFile(index)" type="warn"
+                    >删除</swipeout-button
+                  >
+                </div>
+                <div slot="content" class="demo-content vux-1px-t">
+                  <span class="file-item">{{ item.fileName }}</span>
+                </div>
+              </swipeout-item>
+            </div>
+          </swipeout>
+          <div class="tips" v-if="showTips">附件左滑删除</div>
+        </div>
         <!-- <div v-for="item in form.fileList">
           <div class="file-item">{{ item.fileName }}</div>
         </div> -->
       </div>
       <!-- 审批人 -->
       <div class="approval">
-        审批人
-        <div style="display:flex;margin-top:10px">
+        <span class="block-title">审批人</span>
+        <div style="display:flex;margin-top:10px;padding-left:8px">
           <div
             class="approval-item-container"
             v-for="(item, index) in form.users"
@@ -100,7 +100,13 @@ import {
   Divider
 } from "vux";
 import * as dd from "dingtalk-jsapi";
-import { uploadFile, fetchUserId, fetchJsapiTicket, fetchSign } from "@/api.js";
+import {
+  uploadFile,
+  fetchUserId,
+  fetchJsapiTicket,
+  fetchSign,
+  createApproval
+} from "@/api.js";
 
 export default {
   components: {
@@ -141,6 +147,11 @@ export default {
       userId: "",
       options1: ["需要", "不需要"]
     };
+  },
+  computed: {
+    showTips() {
+      return this.form.fileList && this.form.fileList.length > 0;
+    }
   },
   created() {
     this.init();
@@ -195,8 +206,15 @@ export default {
     // 点击上传附件
     async handleUploadChange(e) {
       const files = e.target.files;
-
       if (files && files.length) {
+        // 如果不是pdf类型
+        if (files[0].type !== "application/pdf") {
+          this.$vux.toast.show({
+            text: "请上传PDF",
+            type: "cancel"
+          });
+          return;
+        }
         dd.runtime.permission.requestAuthCode({
           corpId: this.corpId,
           onSuccess: async info => {
@@ -234,6 +252,15 @@ export default {
               };
               console.log("newItem", newItem);
               this.form.fileList = [...this.form.fileList, newItem];
+            } else {
+              this.$vux.loading.hide();
+              this.$vux.loading.show({
+                text: "上传失败",
+                type: "warn"
+              });
+              setTimeout(() => {
+                this.$vux.loading.hide();
+              }, 2000);
             }
           },
           onFail: err => {
@@ -266,8 +293,30 @@ export default {
         }
       });
     },
-    handleSubmit() {
-      console.log("submit", this.form);
+    async handleSubmit() {
+      const { fileList, users, title, desc } = this.form;
+      if (!title) {
+        this.$vux.toast.text("请输入标题", "top");
+        return;
+      } else if (!desc) {
+        this.$vux.toast.text("请输入描述", "top");
+        return;
+      } else if (!fileList.length > 0) {
+        this.$vux.toast.text("请上传附件", "top");
+        return;
+      } else if (!users.length > 0) {
+        this.$vux.toast.text("请选择审批人", "top");
+        return;
+      }
+      const payload = {
+        ...fileList[0],
+        approvers: users[0].emplId,
+        originatorUserId: this.userId,
+        title,
+        desc
+      };
+      const res = await createApproval(payload);
+      console.log("submit", payload);
     },
     removeApproval(index) {
       const list = [...this.form.users];
@@ -287,6 +336,11 @@ export default {
 .content {
   padding-bottom: 92px;
   box-sizing: border-box;
+}
+.block-title::before {
+  content: "*";
+  color: #f56c6c;
+  margin-right: 4px;
 }
 .bottom {
   position: fixed;
@@ -313,11 +367,6 @@ export default {
   margin-top: 1.17em;
   font-size: 17px;
   overflow: hidden;
-}
-.item-cell {
-  padding: 0;
-  height: 40px;
-  line-height: 40px;
 }
 .file-upload {
   width: 45px;
@@ -418,5 +467,10 @@ export default {
   border-top: 1px solid #e5e5e5;
   padding-top: 4px;
   margin-top: 4px;
+}
+.weui-label::before {
+  content: "*";
+  color: #f56c6c;
+  margin-right: 4px;
 }
 </style>
